@@ -1,12 +1,29 @@
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const alarms = new Map();
+const ALARMS_FILE = path.join(__dirname, 'alarms.json');
+
+function loadAlarms() {
+  try {
+    const data = fs.readFileSync(ALARMS_FILE, 'utf8');
+    return new Map(JSON.parse(data));
+  } catch (e) {
+    return new Map();
+  }
+}
+
+function saveAlarms() {
+  fs.writeFileSync(ALARMS_FILE, JSON.stringify([...alarms]), 'utf8');
+}
+
+const alarms = loadAlarms();
 const devices = new Map(); // deviceId -> { name, pushToken, lastSeen }
 
 // Send Expo push notification
@@ -95,6 +112,7 @@ app.post('/api/alarm', (req, res) => {
   };
 
   alarms.set(id, alarm);
+  saveAlarms();
   console.log(`Alarm set: ${label} at ${time}`);
   res.json({ ok: true, alarm });
 });
@@ -144,6 +162,7 @@ app.post('/api/alarm/:id/dismiss', (req, res) => {
   const alarm = alarms.get(req.params.id);
   if (!alarm) return res.status(404).json({ error: 'alarm not found' });
   alarm.dismissed = true;
+  saveAlarms();
   console.log(`Alarm dismissed: ${alarm.label}`);
   res.json({ ok: true });
 });
@@ -151,6 +170,7 @@ app.post('/api/alarm/:id/dismiss', (req, res) => {
 // Delete alarm
 app.delete('/api/alarm/:id', (req, res) => {
   const deleted = alarms.delete(req.params.id);
+  if (deleted) saveAlarms();
   res.json({ ok: true, deleted });
 });
 

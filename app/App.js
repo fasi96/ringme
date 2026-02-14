@@ -147,7 +147,7 @@ export default function App() {
                   channelId: 'alarms',
                   data: { alarmId: alarm.id, label: alarm.label, time: alarm.time },
                 },
-                trigger: { date: alarmTime, channelId: 'alarms' },
+                trigger: { type: 'date', date: alarmTime.getTime(), channelId: 'alarms' },
               });
               scheduledIds.current.add(alarm.id);
               console.log(`Scheduled local notification for "${alarm.label}" in ${secondsUntil}s`);
