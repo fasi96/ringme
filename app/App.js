@@ -81,10 +81,11 @@ export default function App() {
 
   async function setupNotifications() {
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('alarms', {
-        name: 'Alarms',
+      // Use v2 channel to reset sound settings (Android channels are immutable once created)
+      await Notifications.setNotificationChannelAsync('alarms-v2', {
+        name: 'Alarm Alerts',
         importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 500, 200, 500, 200, 500],
+        vibrationPattern: [0, 1000, 500, 1000, 500, 1000, 500, 1000],
         sound: 'alarm.wav',
         enableVibrate: true,
         lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
@@ -144,10 +145,12 @@ export default function App() {
                   body: `It's time! ${alarm.label}`,
                   sound: 'alarm.wav',
                   priority: 'max',
-                  channelId: 'alarms',
+                  channelId: 'alarms-v2',
+                  sticky: true,
+                  autoDismiss: false,
                   data: { alarmId: alarm.id, label: alarm.label, time: alarm.time },
                 },
-                trigger: { type: 'date', date: alarmTime.getTime(), channelId: 'alarms' },
+                trigger: { type: 'date', date: alarmTime.getTime(), channelId: 'alarms-v2' },
               });
               scheduledIds.current.add(alarm.id);
               console.log(`Scheduled local notification for "${alarm.label}" in ${secondsUntil}s`);

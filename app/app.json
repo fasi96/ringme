@@ -39,7 +39,8 @@
         "android": {
           "usesCleartextTraffic": true
         }
-      }]
+      }],
+      "./plugins/withFullScreenAlarm"
     ],
     "extra": {
       "eas": {
